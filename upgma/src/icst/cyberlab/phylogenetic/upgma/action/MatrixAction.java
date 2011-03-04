@@ -11,7 +11,7 @@ public class MatrixAction {
 		point.setRow(1);
 		for (int row = 1; row < matrix.length; row++) {
 			for (int col = 0; col < row; col++) {				
-				if(matrix[row][col] <= point.getValue()){
+				if(matrix[row][col] < point.getValue()){
 					point.setRow(row);
 					point.setCol(col);
 					point.setValue(matrix[row][col]);
