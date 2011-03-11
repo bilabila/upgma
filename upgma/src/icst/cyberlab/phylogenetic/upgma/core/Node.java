@@ -5,7 +5,18 @@ public class Node {
 	private Node nodeLeft = null;
 	private Node nodeRight = null;
 	private float distance = 0;
+	private PointDraw point;
+	private PointDraw ponitFather;
+	private int count;
 	
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
 	public Node(Node nodeLeft, Node nodeRight, float distance){
 		this.nodeLeft = nodeLeft;
 		this.nodeRight = nodeRight;
@@ -41,5 +52,21 @@ public class Node {
 	}
 	public void setDistance(float distance) {
 		this.distance = distance;
-	}	
+	}
+
+	public PointDraw getPoint() {
+		return point;
+	}
+
+	public void setPoint(PointDraw point) {
+		this.point = point;
+	}
+
+	public PointDraw getPonitFather() {
+		return ponitFather;
+	}
+
+	public void setPonitFather(PointDraw ponitFather) {
+		this.ponitFather = ponitFather;
+	}
 }

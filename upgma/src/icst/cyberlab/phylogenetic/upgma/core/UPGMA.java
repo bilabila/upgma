@@ -84,6 +84,7 @@ public class UPGMA {
 		for (int i = 0; i < sequences.length; i++) {
 			if(sequences[i] != null){
 				newSequence[j] = sequences[i];
+				j++;
 			}
 		}		
 		return newSequence;
@@ -126,7 +127,7 @@ public class UPGMA {
 			t++;
 		}	
 		
-		
+		System.out.println("Finish");
 	}
 	
 }
