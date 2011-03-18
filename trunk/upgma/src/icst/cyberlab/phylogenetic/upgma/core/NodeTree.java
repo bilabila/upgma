@@ -1,9 +1,9 @@
 package icst.cyberlab.phylogenetic.upgma.core;
 
-public class Node {
+public class NodeTree {
 	private String nameNode = null;
-	private Node nodeLeft = null;
-	private Node nodeRight = null;
+	private NodeTree nodeLeft = null;
+	private NodeTree nodeRight = null;
 	private float distance = 0;
 	private PointDraw point;
 	private PointDraw ponitFather;
@@ -17,13 +17,13 @@ public class Node {
 		this.count = count;
 	}
 
-	public Node(Node nodeLeft, Node nodeRight, float distance){
+	public NodeTree(NodeTree nodeLeft, NodeTree nodeRight, float distance){
 		this.nodeLeft = nodeLeft;
 		this.nodeRight = nodeRight;
 		this.distance = distance;
 	}
 	
-	public Node(String nameNode){
+	public NodeTree(String nameNode){
 		this.nameNode = nameNode;
 	}
 	
@@ -35,16 +35,16 @@ public class Node {
 		this.nameNode = nameNode;
 	}
 
-	public Node getNodeLeft() {
+	public NodeTree getNodeLeft() {
 		return nodeLeft;
 	}
-	public void setNodeLeft(Node nodeLeft) {
+	public void setNodeLeft(NodeTree nodeLeft) {
 		this.nodeLeft = nodeLeft;
 	}
-	public Node getNodeRight() {
+	public NodeTree getNodeRight() {
 		return nodeRight;
 	}
-	public void setNodeRight(Node nodeRight) {
+	public void setNodeRight(NodeTree nodeRight) {
 		this.nodeRight = nodeRight;
 	}
 	public float getDistance() {

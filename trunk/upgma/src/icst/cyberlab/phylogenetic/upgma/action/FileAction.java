@@ -1,6 +1,6 @@
 package icst.cyberlab.phylogenetic.upgma.action;
 
-import icst.cyberlab.phylogenetic.upgma.core.Node;
+import icst.cyberlab.phylogenetic.upgma.core.NodeTree;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -39,17 +39,17 @@ public class FileAction {
 		return matrix;
 	}
 	
-	public static Node[] readNodeFromMatrixFile(File matrixFile){
-		Node[] node = null;
+	public static NodeTree[] readNodeFromMatrixFile(File matrixFile){
+		NodeTree[] node = null;
 		try{
 			FileInputStream fstream = new FileInputStream(matrixFile);			
 			DataInputStream input = new DataInputStream(fstream);
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(input));			
 			String strLine = bufferedReader.readLine();
 			String[] object = strLine.split(" ");
-			node = new Node[Integer.parseInt(object[0])];
+			node = new NodeTree[Integer.parseInt(object[0])];
 			for (int j = 1; j < object.length; j++) {
-				node[j - 1] = new Node(object[j]);							
+				node[j - 1] = new NodeTree(object[j]);							
 			}
 		}catch (Exception e){
 			System.err.println("Error: " + e.getMessage());
@@ -66,7 +66,7 @@ public class FileAction {
 	public static void main(String[] args) {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.showOpenDialog(null);		
-		Node[] node = readNodeFromMatrixFile(fileChooser.getSelectedFile());			
+		NodeTree[] node = readNodeFromMatrixFile(fileChooser.getSelectedFile());			
 		float[][] matrix = readMatrixFromMatrixFile(fileChooser.getSelectedFile());
 		if(matrix != null){
 			for (int i = 0; i < matrix.length; i++) {
