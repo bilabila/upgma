@@ -31,7 +31,7 @@ public class NodeAction {
 		
 		Element rooted = doc.createElement("phylogeny");
 		rooted.setAttribute("rooted", "true");
-		root.appendChild(rooted);	
+		
 		
 		Element clade = doc.createElement("clade");
 		rooted.appendChild(clade);
@@ -39,6 +39,10 @@ public class NodeAction {
 		Element name = doc.createElement("name");
 		name.setTextContent("Huynh Minh Duc");
 		rooted.appendChild(name);
+		
+		Element description = doc.createElement("description");
+		name.setTextContent("description");
+		rooted.appendChild(description);
 		
 		//Create node tree
 		doc.appendChild(root);	
@@ -60,21 +64,21 @@ public class NodeAction {
 				NodeTree rightNode = topNode.getNodeRight();
 				nodeChildStack.push(leftNode);
 				nodeChildStack.push(rightNode);
+				Element branch1 = doc.createElement("clade");
 				if(fatherNode != null){
 					fatherNode.setCount(fatherNode.getCount() + 1);
 					nodeFatherStack.push(fatherNode);
+					branch1.setAttribute("branch_length", Float.toString((fatherNode.getDistance() - topNode.getDistance()) / 2));	
 				}
 				//And push current node to parent Stack.
 				nodeFatherStack.push(topNode);
 				//Create a branch element for XML.
-				Element branch1 = doc.createElement("clade");
-				branch1.setAttribute("branch_length", Float.toString(topNode.getDistance()));				
 				branch.push(branch1);
 				
 			}else {
 				if(fatherNode != null){
 					Element leaf = doc.createElement("clade");
-					leaf.setAttribute("branch_length", Float.toString(fatherNode.getDistance()));	
+					leaf.setAttribute("branch_length", Float.toString(fatherNode.getDistance() / 2));	
 					Element leaf2 = doc.createElement("name");
 					leaf2.setTextContent(topNode.getNameNode());
 					leaf.appendChild(leaf2);
@@ -120,6 +124,7 @@ public class NodeAction {
 				}
 			}
 		}
+		root.appendChild(rooted);	
 		return doc;
 	}
 }
