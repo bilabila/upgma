@@ -1,6 +1,8 @@
 package icst.cyberlab.phylogenetic.upgma.gui;
 
-import info.bioinfweb.treegraph.Main;
+import icst.cyberlab.phylogenetic.upgma.action.FileAction;
+import icst.cyberlab.phylogenetic.upgma.core.NodeTree;
+import icst.cyberlab.phylogenetic.upgma.core.UPGMA;
 import info.bioinfweb.treegraph.document.Document;
 import info.bioinfweb.treegraph.document.io.DocumentReader;
 import info.bioinfweb.treegraph.document.io.ReadWriteFactory;
@@ -11,13 +13,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComponent;
+
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -27,12 +31,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableModel;
+
 
 import org.dyno.visual.swing.layouts.Bilateral;
 import org.dyno.visual.swing.layouts.Constraints;
@@ -53,8 +56,7 @@ public class UPGMAApplication extends JFrame {
 	private JMenuItem jMenuItem5;
 	private JMenu helpMenu;
 	private JMenuBar jMenuBar0;
-	private JButton jButton0;
-	private JTable jTable0;
+	private JButton runButton;
 	private JScrollPane jScrollPane0;
 	private JPanel jPanel0;
 	private JTextArea jTextArea0;
@@ -64,6 +66,8 @@ public class UPGMAApplication extends JFrame {
 	private JPanel jPanel1;
 	private JSplitPane jSplitPane0;
 	private static final String PREFERRED_LOOK_AND_FEEL = "javax.swing.plaf.metal.MetalLookAndFeel";
+	private UPGMA upgma;
+	
 	public UPGMAApplication() {
 		initComponents();
 	}
@@ -73,6 +77,8 @@ public class UPGMAApplication extends JFrame {
 		add(getJSplitPane0(), new Constraints(new Bilateral(12, 12, 202), new Bilateral(12, 12, 28)));
 		setJMenuBar(getJMenuBar0());
 		setSize(1037, 715);
+		//initial upgma object
+		upgma = new UPGMA();
 	}
 
 	private JSplitPane getJSplitPane0() {
@@ -103,87 +109,6 @@ public class UPGMAApplication extends JFrame {
 			jPanel2.setBorder(BorderFactory.createTitledBorder(null, "Phynogenetic Tree", TitledBorder.LEADING, TitledBorder.DEFAULT_POSITION, new Font("Dialog",
 					Font.BOLD, 12), new Color(51, 51, 51)));
 			jPanel2.setLayout(new BorderLayout());
-			///thu nghiep
-			Document document = null;
-			JFileChooser fc = new JFileChooser();
-			fc.showOpenDialog(null);
-			File file = fc.getSelectedFile();
-			if ((file != null)) {
-				if (file.canRead()) {
-					DocumentReader reader = ReadWriteFactory.getInstance().getReader(file);
-					if (reader != null) {
-						try {
-							document = reader.read(file, LoadLoggerDialog.getInstance());
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-							JOptionPane.showMessageDialog(null, "The error \"" + e.getMessage() + 
-									"\" occured when trying to open the file \"" + file.getAbsolutePath() + 
-									"\"", "Error", JOptionPane.ERROR_MESSAGE);
-						}
-					}
-					else {
-						JOptionPane.showMessageDialog(this, "The file \"" + file.getAbsolutePath() + 
-								"\" does not have a supported format.", "Format error", 
-								JOptionPane.ERROR_MESSAGE);
-					}
-				}
-				else {
-					JOptionPane.showMessageDialog(this, "The file \"" + file.getAbsolutePath() + 
-							"\" cannot be opened.", "File error", JOptionPane.ERROR_MESSAGE);
-				}
-			}
-			
-			final TreeViewPanel treeViewPanel = new TreeViewPanel(document);
-			treeViewPanel.setLayout(new GridBagLayout());			
-			treeViewPanel.addMouseListener(new MouseListener(){
-
-				@Override
-				public void mouseClicked(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					if(arg0.getButton() == MouseEvent.BUTTON1){
-						float zoom = treeViewPanel.getZoom();
-						zoom++;
-						treeViewPanel.setZoom(zoom);
-						treeViewPanel.requestFocus();
-					}
-					if(arg0.getButton() == MouseEvent.BUTTON3){
-						float zoom = treeViewPanel.getZoom();
-						zoom--;
-						treeViewPanel.setZoom(zoom);
-						treeViewPanel.requestFocus();
-					}
-				}
-
-				@Override
-				public void mouseEntered(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void mouseExited(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void mousePressed(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void mouseReleased(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-			});
-			JScrollPane treeScrollPane = new JScrollPane();
-			treeScrollPane.setViewportView(treeViewPanel);
-	        jPanel2.add(treeScrollPane, BorderLayout.CENTER);
-	       
 		}
 		return jPanel2;
 	}
@@ -207,7 +132,7 @@ public class UPGMAApplication extends JFrame {
 	
 	private JTextArea getMatrixTextArea() {
 		if (matrixTextArea == null) {
-			matrixTextArea = new JTextArea();
+			matrixTextArea = new JTextArea();			
 		}
 		return matrixTextArea;
 	}
@@ -218,7 +143,7 @@ public class UPGMAApplication extends JFrame {
 			jPanel0.setBorder(BorderFactory.createTitledBorder(null, "Matrix distance input", TitledBorder.LEADING, TitledBorder.DEFAULT_POSITION, new Font(
 					"Dialog", Font.BOLD, 12), new Color(51, 51, 51)));
 			jPanel0.setLayout(new GroupLayout());
-			jPanel0.add(getJButton0(), new Constraints(new Trailing(12, 12, 12), new Trailing(12, 51, 482)));
+			jPanel0.add(getRunButton(), new Constraints(new Trailing(12, 12, 12), new Trailing(12, 51, 482)));
 			jPanel0.add(getJScrollPane0(), new Constraints(new Bilateral(11, 12, 22), new Bilateral(13, 50, 26, 403)));
 		}
 		return jPanel0;
@@ -230,29 +155,113 @@ public class UPGMAApplication extends JFrame {
 			jScrollPane0.setViewportView(getMatrixTextArea());
 		}
 		return jScrollPane0;
-	}
+	}	
 
-	private JTable getJTable0() {
-		if (jTable0 == null) {
-			jTable0 = new JTable();
-			jTable0.setModel(new DefaultTableModel(new Object[][] { { "0x0", "0x1", }, { "1x0", "1x1", }, }, new String[] { "Title 0", "Title 1", }) {
-				private static final long serialVersionUID = 1L;
-				Class<?>[] types = new Class<?>[] { Object.class, Object.class, };
-	
-				public Class<?> getColumnClass(int columnIndex) {
-					return types[columnIndex];
+	private JButton getRunButton() {
+		if (runButton == null) {
+			runButton = new JButton();
+			runButton.setText("Run");
+			runButton.addActionListener(new ActionListener(){
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					Thread thread = new Thread(new Runnable(){
+
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							String outProcess = upgma.run();
+							jTextArea0.setText(outProcess);
+							///thu nghiep
+							Document doc = null;
+							File file = new File("b.xml");
+							if ((file != null)) {
+								if (file.canRead()) {
+									DocumentReader reader = ReadWriteFactory.getInstance().getReader(file);
+									if (reader != null) {
+										try {
+											doc = reader.read(file, LoadLoggerDialog.getInstance());
+										}
+										catch (Exception ex) {
+											ex.printStackTrace();
+											JOptionPane.showMessageDialog(null, "The error \"" + ex.getMessage() + 
+													"\" occured when trying to open the file \"" + file.getAbsolutePath() + 
+													"\"", "Error", JOptionPane.ERROR_MESSAGE);
+										}
+									}
+									else {
+										JOptionPane.showMessageDialog(null, "The file \"" + file.getAbsolutePath() + 
+												"\" does not have a supported format.", "Format error", 
+												JOptionPane.ERROR_MESSAGE);
+									}
+								}
+								else {
+									JOptionPane.showMessageDialog(null, "The file \"" + file.getAbsolutePath() + 
+											"\" cannot be opened.", "File error", JOptionPane.ERROR_MESSAGE);
+								}
+							}
+							
+							final TreeViewPanel treeViewPanel = new TreeViewPanel(doc);
+							treeViewPanel.setLayout(new GridBagLayout());			
+							treeViewPanel.addMouseListener(new MouseListener(){
+
+								@Override
+								public void mouseClicked(MouseEvent arg0) {
+									// TODO Auto-generated method stub
+									if(arg0.getButton() == MouseEvent.BUTTON1){
+										float zoom = treeViewPanel.getZoom();
+										zoom++;
+										treeViewPanel.setZoom(zoom);
+										treeViewPanel.requestFocus();
+									}
+									if(arg0.getButton() == MouseEvent.BUTTON3){
+										float zoom = treeViewPanel.getZoom();
+										zoom--;
+										treeViewPanel.setZoom(zoom);
+										treeViewPanel.requestFocus();
+									}
+								}
+
+								@Override
+								public void mouseEntered(MouseEvent arg0) {
+									// TODO Auto-generated method stub
+									
+								}
+
+								@Override
+								public void mouseExited(MouseEvent arg0) {
+									// TODO Auto-generated method stub
+									
+								}
+
+								@Override
+								public void mousePressed(MouseEvent arg0) {
+									// TODO Auto-generated method stub
+									
+								}
+
+								@Override
+								public void mouseReleased(MouseEvent arg0) {
+									// TODO Auto-generated method stub
+									
+								}
+								
+							});
+							JScrollPane treeScrollPane = new JScrollPane();
+							treeScrollPane.setViewportView(treeViewPanel);
+					        jPanel2.add(treeScrollPane, BorderLayout.CENTER);
+					        jPanel2.repaint();
+					        
+						}
+						
+					});
+					
+					thread.start();
 				}
 			});
 		}
-		return jTable0;
-	}
-
-	private JButton getJButton0() {
-		if (jButton0 == null) {
-			jButton0 = new JButton();
-			jButton0.setText("Run");
-		}
-		return jButton0;
+		return runButton;
 	}
 
 	private JMenuBar getJMenuBar0() {
@@ -332,7 +341,42 @@ public class UPGMAApplication extends JFrame {
 		if (openFile == null) {
 			openFile = new JMenuItem();
 			openFile.setText("Open");
-		}
+			openFile.addActionListener(new ActionListener(){
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub				
+					JFileChooser fileChooser = new JFileChooser();
+					fileChooser.showOpenDialog(null);
+
+					File file = fileChooser.getSelectedFile();
+					if(file != null){							
+						upgma.setTree(FileAction.readNodeFromMatrixFile(file));			
+						upgma.setDistanceMatrix(FileAction.readMatrixFromMatrixFile(file));
+						StringBuffer matrixInput = new StringBuffer();
+						matrixInput.append("Matrix input : ");
+						matrixInput.append("\n");
+						float[][] matrix = upgma.getDistanceMatrix();
+						NodeTree[] node = upgma.getTree();
+						if(matrix != null){
+							for (int i = 0; i < matrix.length; i++) {
+								StringBuffer line = new StringBuffer();
+								for (int j = 0; j < matrix.length; j++) {
+									line.append(matrix[i][j] + " ");
+								}
+								if(node[i] != null) {
+									line.append(node[i].getNameNode());
+									line.append("\n");
+								}				
+								matrixInput.append(line);
+							}
+							matrixTextArea.setText(matrixInput.toString());
+							matrixTextArea.repaint();
+						}		
+					}
+				}
+				
+			});					}
 		return openFile;
 	}
 
@@ -341,7 +385,7 @@ public class UPGMAApplication extends JFrame {
 			String lnfClassname = PREFERRED_LOOK_AND_FEEL;
 			if (lnfClassname == null)
 				lnfClassname = UIManager.getCrossPlatformLookAndFeelClassName();
-			UIManager.setLookAndFeel(lnfClassname);
+				UIManager.setLookAndFeel(lnfClassname);
 		} catch (Exception e) {
 			System.err.println("Cannot install " + PREFERRED_LOOK_AND_FEEL
 					+ " on this platform:" + e.getMessage());
