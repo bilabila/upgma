@@ -1,55 +1,73 @@
 package icst.cyberlab.phylogenetic.upgma.core;
 
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.w3c.dom.Document;
+
 import icst.cyberlab.phylogenetic.upgma.action.MatrixAction;
+import icst.cyberlab.phylogenetic.upgma.action.NodeAction;
+import icst.cyberlab.phylogenetic.upgma.utilities.XMLUtilities;
 
 public class UPGMA {
 	private NodeTree[] tree = null;
 	private float[][] distanceMatrix = null;
 	
-	public void run(float[][] matrix, NodeTree[] nodeList){
-		// TODO Auto-generated method stub
-		this.tree = nodeList;
-		this.distanceMatrix = matrix;
+	public String run(){
 		
-		System.out.println("Matrix distance input : ");
-		for (int i = 0; i < distanceMatrix.length; i++) {
-			for (int j = 0; j < distanceMatrix.length; j++) {
-				System.out.print(" " + distanceMatrix[i][j]);
+		StringBuffer outProcessString = new StringBuffer();
+		
+		outProcessString.append("Matrix distance input : ");
+		outProcessString.append("\n");
+		for (int i = 0; i < this.distanceMatrix.length; i++) {
+			StringBuffer line = new StringBuffer();
+			for (int j = 0; j < this.distanceMatrix.length; j++) {
+				line.append(" " + this.distanceMatrix[j][i]);
 			}
-			System.out.println();
+			outProcessString.append(line);
+			outProcessString.append("\n");	
+			System.gc();
 		}
 		
 		int t = 1;
-		
-		/*while(!upgma.checkMatrixToTerminateIterate(matrix)){
-			Point point = MatrixAction.findPointMinValueInMatrix(matrix);
-			System.out.println("Cluster : " + t + " Value : " + point.getValue() + "  Row : " + point.getRow() + "  Column : " + point.getCol());
-			nodeList = upgma.clusterTwoNode(nodeList, matrix[point.getRow()][point.getCol()], point.getRow(), point.getCol());
-			matrix = upgma.clusterTwoMatrix(matrix, point.getRow(), point.getCol());
-			for (int i = 0; i < matrix.length; i++) {
-				for (int j = 0; j < matrix.length; j++) {
-					System.out.print(" " + matrix[j][i]);
+		while(!this.checkMatrixToTerminateIterate(this.distanceMatrix)){
+			Point point = MatrixAction.findPointMinValueInMatrix(this.distanceMatrix);
+			outProcessString.append("Cluster : " + t + " Value : " + point.getValue() + "  Row : " + point.getRow() + "  Column : " + point.getCol());
+			outProcessString.append("\n");	
+			tree  = this.clusterTwoNode(tree , this.distanceMatrix[point.getRow()][point.getCol()], point.getRow(), point.getCol());
+			this.distanceMatrix = this.clusterTwoMatrix(this.distanceMatrix, point.getRow(), point.getCol());
+			for (int i = 0; i < this.distanceMatrix.length; i++) {
+				StringBuffer line = new StringBuffer();
+				for (int j = 0; j < this.distanceMatrix.length; j++) {
+					line.append(" " + this.distanceMatrix[j][i]);
 				}
-				System.out.println();
+				outProcessString.append(line);
+				outProcessString.append("\n");
+				System.gc();
 			}
 			t++;
+		}		
+		outProcessString.append("Finish");
+		outProcessString.append("\n");
+		//Run export to xml file
+		NodeAction nodeAction = new NodeAction();
+		try {
+			Document doc = nodeAction.convertTreeToXML(tree[0]);
+			XMLUtilities xmlUtilities = new XMLUtilities();
+			xmlUtilities.writeXmlFile(doc, "b.xml");
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerFactoryConfigurationError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		System.out.println("Finish");*/
-		
-		while(!this.checkMatrixToTerminateIterate(distanceMatrix)){
-			Point point = MatrixAction.findPointMinValueInMatrix(distanceMatrix);
-			System.out.println("Cluster : " + t + " Value : " + point.getValue() + "  Row : " + point.getRow() + "  Column : " + point.getCol());
-			tree = this.clusterTwoNode(tree, distanceMatrix[point.getRow()][point.getCol()], point.getRow(), point.getCol());
-			matrix = this.clusterTwoMatrix(distanceMatrix, point.getRow(), point.getCol());
-			for (int i = 0; i < distanceMatrix.length; i++) {
-				for (int j = 0; j < distanceMatrix.length; j++) {
-					System.out.print(" " + distanceMatrix[i][j]);
-				}
-				System.out.println();
-			}
-			t++;
-		}
-		System.out.println("Finish");		
+		return outProcessString.toString();
 	}
 	
 	public boolean checkMatrixToTerminateIterate(float[][] matrixValue){		
@@ -78,14 +96,7 @@ public class UPGMA {
 					addNodeClusterMatrix[i][j] = addNodeClusterMatrix[j][i];
 				}
 			}
-		}
-		
-		/*for (int i = 0; i < addNodeClusterMatrix.length; i++) {
-			for (int j = 0; j < addNodeClusterMatrix.length; j++) {
-				System.out.print(" " + addNodeClusterMatrix[i][j]);
-			}
-			System.out.println();
-		}*/
+		}		
 		
 		newMatrix = new float[numOfNode - 1][numOfNode - 1];
 		int row = 0, col = 0;
@@ -172,7 +183,7 @@ public class UPGMA {
 			System.out.println();
 		}
 		
-		int t= 1;
+		int t = 1;
 		while(!upgma.checkMatrixToTerminateIterate(matrix)){
 			Point point = MatrixAction.findPointMinValueInMatrix(matrix);
 			System.out.println("Cluster : " + t + " Value : " + point.getValue() + "  Row : " + point.getRow() + "  Column : " + point.getCol());
@@ -187,6 +198,23 @@ public class UPGMA {
 			t++;
 		}
 		System.out.println("Finish");
+		
+		//Run export to xml file
+		NodeAction nodeAction = new NodeAction();
+		try {
+			Document doc = nodeAction.convertTreeToXML(nodeList[0]);
+			XMLUtilities xmlUtilities = new XMLUtilities();
+			xmlUtilities.writeXmlFile(doc, "b.xml");
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerFactoryConfigurationError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 }

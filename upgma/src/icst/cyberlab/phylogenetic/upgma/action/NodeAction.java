@@ -1,104 +1,125 @@
 package icst.cyberlab.phylogenetic.upgma.action;
 
+
 import java.util.Stack;
 
 import icst.cyberlab.phylogenetic.upgma.core.NodeTree;
-import icst.cyberlab.phylogenetic.upgma.core.PointDraw;
-import icst.cyberlab.phylogenetic.upgma.gui.DrawTreeSpacePanel;
-import icst.cyberlab.phylogenetic.upgma.utilities.XMLUtilities;
-
-import javax.swing.JFrame;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Comment;
+import javax.xml.transform.TransformerException;
+
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class NodeAction {
-	public Document convertTreeToXML(NodeTree node) throws ParserConfigurationException{
+	public Document convertTreeToXML(NodeTree node) throws ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException{
 		
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = factory.newDocumentBuilder();
 		Document doc = docBuilder.newDocument();
 		
-		Element root = doc.createElement("tree");
+		Element root = doc.createElement("phyloxml");
+		root.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		root.setAttribute("xsi:schemaLocation", "http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd");
+		root.setAttribute("xmlns", "http://www.phyloxml.org");
+		
+		Element rooted = doc.createElement("phylogeny");
+		rooted.setAttribute("rooted", "true");
+		root.appendChild(rooted);	
+		
+		Element clade = doc.createElement("clade");
+		rooted.appendChild(clade);
+		
+		Element name = doc.createElement("name");
+		name.setTextContent("Huynh Minh Duc");
+		rooted.appendChild(name);
+		
+		//Create node tree
 		doc.appendChild(root);	
 		Stack<Element> branch = new Stack<Element>();
-		
 		Stack<NodeTree> nodeFatherStack = new Stack<NodeTree>();
 		Stack<NodeTree> nodeChildStack = new Stack<NodeTree>();
-		while(nodeChildStack.size() == 0){
+		
+		nodeChildStack.push(node);
+		
+		while(nodeChildStack.size() != 0){
 			NodeTree topNode = nodeChildStack.pop();
-			NodeTree father = nodeFatherStack.pop();
-			if(father != null){
-				father.setCount(father.getCount() + 1);
-				// tinh toan vi tri cho not con tu not cha.
-				topNode.setPonitFather(father.getPoint());
-				if(father.getCount() == 1){
-					
-				} else {
-					
-				}
-			}			
-			//set 2 node in child node
-			NodeTree right = topNode.getNodeRight();
-			if(right != null){
-				nodeChildStack.push(right);
+			NodeTree fatherNode = null;		
+			if(nodeFatherStack.size() != 0){
+				fatherNode = nodeFatherStack.pop();
 			}
-			NodeTree left = topNode.getNodeLeft();
-			if(left != null){
-				nodeChildStack.push(left);
-			}
-			//set 2 node in father node		
-			if(father != null){
-				if(father.getCount() == 2){
-					
-				}else {
-					nodeFatherStack.push(father);
-				}				
-			}			
 			if(topNode.getNodeRight() != null && topNode.getNodeLeft() != null){
+				//get two node left and right push into child Stack.
+				NodeTree leftNode = topNode.getNodeLeft();
+				NodeTree rightNode = topNode.getNodeRight();
+				nodeChildStack.push(leftNode);
+				nodeChildStack.push(rightNode);
+				if(fatherNode != null){
+					fatherNode.setCount(fatherNode.getCount() + 1);
+					nodeFatherStack.push(fatherNode);
+				}
+				//And push current node to parent Stack.
 				nodeFatherStack.push(topNode);
-			}else {
+				//Create a branch element for XML.
+				Element branch1 = doc.createElement("clade");
+				branch1.setAttribute("branch_length", Float.toString(topNode.getDistance()));				
+				branch.push(branch1);
 				
+			}else {
+				if(fatherNode != null){
+					Element leaf = doc.createElement("clade");
+					leaf.setAttribute("branch_length", Float.toString(fatherNode.getDistance()));	
+					Element leaf2 = doc.createElement("name");
+					leaf2.setTextContent(topNode.getNameNode());
+					leaf.appendChild(leaf2);
+
+					fatherNode.setCount(fatherNode.getCount() + 1);
+					//nodeFatherStack.push(fatherNode);
+
+					Element branch1 = branch.pop();
+					branch1.appendChild(leaf);
+					//branch.push(branch1);		
+					
+					if(nodeFatherStack.size() != 0){
+						NodeTree grandFather = nodeFatherStack.pop();
+						Element grandElement = branch.pop();
+						
+						if(fatherNode.getCount() == 2){
+							grandElement.appendChild(branch1);								
+							while(grandFather.getCount() == 2){
+								grandElement.appendChild(branch1);
+								branch1 = grandElement;
+								if(branch.size() != 0){
+									grandElement = branch.pop();
+								}else {
+									clade.appendChild(branch1);
+								}
+								fatherNode = grandFather;
+								if(nodeFatherStack.size() != 0){
+									grandFather = nodeFatherStack.pop();
+								}else break;								
+							}		
+							branch.push(grandElement);
+							nodeFatherStack.push(grandFather);
+						}else {
+							branch.push(grandElement);								
+							nodeFatherStack.push(grandFather);
+
+							branch.push(branch1);
+							nodeFatherStack.push(fatherNode);
+						}
+					}else {
+						clade.appendChild(branch1);
+					}
+				}
 			}
 		}
-			
-		
-		//declaration node
-		Element declarations = doc.createElement("declarations");
-		Element attributeDecl = doc.createElement("attributeDecl");
-		attributeDecl.setAttribute("name","name");
-		attributeDecl.setAttribute("type","String");
-		declarations.appendChild(attributeDecl);	
-		root.appendChild(declarations);
-				
-		//Create branch ... with attribute...		
-		Element branch1 = doc.createElement("branch");
-		Element attribute = doc.createElement("attribute");
-		attribute.setAttribute("name","name");
-		attribute.setAttribute("value","9");
-		branch1.appendChild(attribute);
-		
-		// create a leaf node.
-		Element leaf = doc.createElement("leaf");
-		Element childElement = doc.createElement("attribute");
-		childElement.setAttribute("name","name");
-		childElement.setAttribute("value","C");
-		leaf.appendChild(childElement);
-		
-		branch1.appendChild(leaf);
-		root.appendChild(branch1);
-		
 		return doc;
-	}
-	
-	public static void main(String[] args) throws ParserConfigurationException{
-		XMLUtilities xmlUtilities = new XMLUtilities();
-		NodeAction nodeAction = new NodeAction();		
-		//xmlUtilities.writeXmlFile(nodeAction.convertTreeToXML(), "a.xml");
 	}
 }
