@@ -6,6 +6,7 @@ import icst.cyberlab.phylogenetic.upgma.core.UPGMA;
 import info.bioinfweb.treegraph.document.Document;
 import info.bioinfweb.treegraph.document.io.DocumentReader;
 import info.bioinfweb.treegraph.document.io.ReadWriteFactory;
+import info.bioinfweb.treegraph.graphics.positionpaint.PositionPaintType;
 import info.bioinfweb.treegraph.gui.dialogs.io.loadlogger.LoadLoggerDialog;
 import info.bioinfweb.treegraph.gui.treeframe.TreeViewPanel;
 
@@ -203,7 +204,8 @@ public class UPGMAApplication extends JFrame {
 							}
 							
 							final TreeViewPanel treeViewPanel = new TreeViewPanel(doc);
-							treeViewPanel.setLayout(new GridBagLayout());			
+							treeViewPanel.setLayout(new GridBagLayout());		
+							treeViewPanel.setPainterType(PositionPaintType.PHYLOGRAM);
 							treeViewPanel.addMouseListener(new MouseListener(){
 
 								@Override
@@ -250,7 +252,9 @@ public class UPGMAApplication extends JFrame {
 							});
 							JScrollPane treeScrollPane = new JScrollPane();
 							treeScrollPane.setViewportView(treeViewPanel);
+							jPanel2.removeAll(); 
 					        jPanel2.add(treeScrollPane, BorderLayout.CENTER);
+					        jPanel2.revalidate();
 					        jPanel2.repaint();
 					        
 						}
